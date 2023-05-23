@@ -19,9 +19,9 @@ from gym_stage.envs import Respawn
 
 
 class StageEnv(gym.Env):
-    def __init__(self, env_stage=1, max_env_size=None, continuous=False, observation_size=24,
-                 action_size=5, min_range=0.1, max_range=2.5, min_ang_vel=-1.5, max_ang_vel=1.5, min_linear_vel=-0.5,
-                 max_linear_vel=0.5, goalbox_distance=0.35, collision_distance=0.18, reward_goal=200.,
+    def __init__(self, env_stage=1, max_env_size=None, continuous=True, observation_size=1081,
+                 action_size=2, min_range=0.0, max_range=30., min_ang_vel=-2.3583762645721436, max_ang_vel=2.3583762645721436, min_linear_vel=0.0,
+                 max_linear_vel=0.5, goalbox_distance=0.2, collision_distance=0.20, reward_goal=200.,
                  reward_collision=-20, angle_out=250, goal_list=None):
 
         self.goal_x = 0
@@ -160,7 +160,7 @@ class StageEnv(gym.Env):
                     done = True
                     self.episode_finished()
         # current_distance = np.sqrt(32) / (current_distance + 1)
-        return self.get_env_state() + [heading, current_distance], done
+        return self.lidar_distances + [heading, current_distance], done
 
     def get_done_reward(self, lidar, distance):
         done = False
@@ -243,7 +243,7 @@ class StageEnv(gym.Env):
         if new_random_goals:
             if self.env_stage == 1 or self.env_stage == 2:
                 self.respawn_goal.setGoalList(
-                    np.asarray([np.random.uniform((-1.65, -1.65), (1.65, 1.65)) for _ in range(1)]))
+                    np.asarray([np.random.uniform((-4.5, -1.5), (4.5, 7.5)) for _ in range(1)]))
             else:
                 val = np.random.uniform((0.25, -0.25), (3.75, -3.75))
                 # while 1.0 < val[0] < 2.5 and -1.0 > val[1] > -2.5:
@@ -274,7 +274,6 @@ class StageEnv(gym.Env):
 
         self.goal_distance = self.old_distance = self._getGoalDistace()
         state, _ = self.getState(data)
-
         return state
 
     def render(self, mode=True):
