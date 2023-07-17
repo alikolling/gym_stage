@@ -20,8 +20,8 @@ from gym_stage.envs import Respawn
 
 class StageEnv(gym.Env):
     def __init__(self, env_stage=1, max_env_size=None, continuous=True, observation_size=1081,
-                 action_size=2, min_range=0.0, max_range=30., min_ang_vel=-2.3583762645721436, max_ang_vel=2.3583762645721436, min_linear_vel=0.0,
-                 max_linear_vel=0.5, goalbox_distance=0.2, collision_distance=0.20, reward_goal=200.,
+                 action_size=2, min_range=0.05, max_range=8., min_ang_vel=-2.3583762645721436, max_ang_vel=2.3583762645721436, min_linear_vel=-0.10,
+                 max_linear_vel=0.5, goalbox_distance=0.5, collision_distance=0.20, reward_goal=200.,
                  reward_collision=-20, angle_out=250, goal_list=None):
 
         self.goal_x = 0
@@ -34,7 +34,7 @@ class StageEnv(gym.Env):
 
 
         self.pub_cmd_vel = rospy.Publisher('cmd_vel', Twist, queue_size=1)
-        self.sub_odom = rospy.Subscriber('odom', Odometry, self.getOdometry)
+        self.sub_odom = rospy.Subscriber('base_pose_ground_truth', Odometry, self.getOdometry)
 
         self.reset_proxy = rospy.ServiceProxy('reset_positions', Empty)
         self.respawn_goal = Respawn()
@@ -101,7 +101,7 @@ class StageEnv(gym.Env):
         return low, high
 
     def _getGoalDistace(self):
-        goal_distance = round(math.hypot(self.goal_x - self.position.x, self.goal_y - self.position.y), 2)
+        goal_distance = round(np.linalg.norm([self.goal_x - self.position.x, self.goal_y - self.position.y]), 2)
         return goal_distance
 
     def getOdometry(self, odom):
@@ -192,7 +192,7 @@ class StageEnv(gym.Env):
                 self.goal_x, self.goal_y = self.respawn_goal.getPosition(True)
                 self.goal_distance = self._getGoalDistace()
         else:
-            reward = 0
+            reward = 0.0
         return reward
 
     def set_ang_vel(self, action):
@@ -234,8 +234,6 @@ class StageEnv(gym.Env):
     def get_target_position(self):
         return [self.goal_x, self.goal_y]
 
-    def get_scan(self):
-        return self.lidar_distances
 
 
     def reset(self, new_random_goals=True, goal=None):
