@@ -6,6 +6,7 @@ This is a gym env to work with the Stage simulations, allowing the use of deep r
 ## Installation
 
 ```
+pip install gym==0.21.0
 git clone https://github.com/alikolling/gym_stage
 cd gym_stage
 pip install -e .
